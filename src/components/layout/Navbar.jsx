@@ -376,7 +376,7 @@ const Navbar = () => {
             </button>
             
             {showCoursesDropdown && (
-                {coursesLoading ? (
+                coursesLoading ? (
                     <div className="pl-4 mt-1 space-y-2">
                         {[1, 2, 3].map((i) => (
                             <div key={i} className="h-8 bg-gray-200 rounded animate-pulse"></div>
@@ -415,7 +415,7 @@ const Navbar = () => {
                             </div>
                         ))}
                     </div>
-                )}
+                )
             )}
         </div>
 
