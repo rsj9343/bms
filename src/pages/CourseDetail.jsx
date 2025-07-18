@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Clock, Users, DollarSign, Award, CheckCircle, Star, Calendar, BookOpen, Target, Trophy } from 'lucide-react';
+import { CourseDetailSkeleton } from '../components/common/SkeletonLoader';
 
 const CourseDetailPage = () => {
     const [activeTab, setActiveTab] = useState('overview');
@@ -31,7 +32,7 @@ const CourseDetailPage = () => {
     }, [courseId]);
 
     if (loading) {
-        return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+        return <CourseDetailSkeleton />;
     }
 
     if (error) {

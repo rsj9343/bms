@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, User, LogOut, ChevronDown, ChevronRight, BookOpen, Users, Clock, Code, Calculator, Palette, Globe, Monitor, TrendingUp } from 'lucide-react';
 import { FaFacebookF, FaInstagram, FaXTwitter, FaLinkedinIn, FaYoutube } from 'react-icons/fa6';
-import coursesData from "../../data/courseData"
 import { useNavigate } from 'react-router-dom';
 import logo from '../../assets/logo.png'; // Adjust the path as necessary
 import extendlogo from '../../assets/extendlogo.png'; // Adjust the path as necessary
 
-// Enhanced course data with icons and metadata
 
 
 // Utility to slugify course names for URL
@@ -22,7 +20,19 @@ const Navbar = () => {
     const [activeCategoryIndex, setActiveCategoryIndex] = useState(0);
     const [dropdownTimeout, setDropdownTimeout] = useState(null);
     const [hoveredCourse, setHoveredCourse] = useState(null);
+    const [coursesData, setCoursesData] = useState([]);
+    const [coursesLoading, setCoursesLoading] = useState(true);
     const navigate = useNavigate();
+
+    // Icon mapping for categories
+    const categoryIcons = {
+        "IT & Digital Literacy": <Monitor className="w-4 h-4" />,
+        "Programming & Development": <Code className="w-4 h-4" />,
+        "Accounting & Finance": <Calculator className="w-4 h-4" />,
+        "Digital Marketing & Graphics": <TrendingUp className="w-4 h-4" />,
+        "Design": <Palette className="w-4 h-4" />,
+        "Business": <Globe className="w-4 h-4" />
+    };
 
     const toggleMenu = () => setIsOpen(!isOpen);
     const toggleLogin = () => setIsLoggedIn(!isLoggedIn);
@@ -35,6 +45,30 @@ const Navbar = () => {
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    useEffect(() => {
+        const fetchCourses = async () => {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/api/courses`);
+                if (!response.ok) throw new Error('Failed to fetch courses');
+                const data = await response.json();
+                
+                // Transform data to match the expected format
+                const transformedData = data.map(category => ({
+                    category: category.category,
+                    icon: categoryIcons[category.category] || <BookOpen className="w-4 h-4" />,
+                    courses: category.courses
+                }));
+                
+                setCoursesData(transformedData);
+                setCoursesLoading(false);
+            } catch (error) {
+                console.error('Error fetching courses:', error);
+                setCoursesLoading(false);
+            }
+        };
+
+        fetchCourses();
+    }, []);
     return (
         <>
             {/* Top Bar */}
@@ -124,38 +158,55 @@ const Navbar = () => {
                                                     </h3>
                                                 </div>
                                                 <div className="p-2">
-                                                    <ul className="space-y-1">
-                                                        {coursesData.map((cat, idx) => (
-                                                            <li
-                                                                key={idx}
-                                                                onMouseEnter={() => setActiveCategoryIndex(idx)}
-                                                                className={`group cursor-pointer transition-all duration-200 ease-in-out rounded-lg ${activeCategoryIndex === idx
-                                                                    ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md transform scale-[1.02]'
-                                                                    : 'text-slate-700 hover:bg-white hover:shadow-sm'
-                                                                    }`}
-                                                            >
-                                                                <div className="flex items-center justify-between px-4 py-3">
-                                                                    <div className="flex items-center gap-3">
-                                                                        <div className={`transition-colors duration-200 ${activeCategoryIndex === idx ? 'text-white' : 'text-teal-600'
-                                                                            }`}>
-                                                                            {cat.icon}
+                                                    {coursesLoading ? (
+                                                        <div className="space-y-2">
+                                                            {[1, 2, 3, 4].map((i) => (
+                                                                <div key={i} className="h-12 bg-gray-200 rounded-lg animate-pulse"></div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <ul className="space-y-1">
+                                                            {coursesData.map((cat, idx) => (
+                                                                <li
+                                                                    key={idx}
+                                                                    onMouseEnter={() => setActiveCategoryIndex(idx)}
+                                                                    className={`group cursor-pointer transition-all duration-200 ease-in-out rounded-lg ${activeCategoryIndex === idx
+                                                                        ? 'bg-gradient-to-r from-teal-500 to-teal-600 text-white shadow-md transform scale-[1.02]'
+                                                                        : 'text-slate-700 hover:bg-white hover:shadow-sm'
+                                                                        }`}
+                                                                >
+                                                                    <div className="flex items-center justify-between px-4 py-3">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <div className={`transition-colors duration-200 ${activeCategoryIndex === idx ? 'text-white' : 'text-teal-600'
+                                                                                }`}>
+                                                                                {cat.icon}
+                                                                            </div>
+                                                                            <span className="font-medium text-sm">{cat.category}</span>
                                                                         </div>
-                                                                        <span className="font-medium text-sm">{cat.category}</span>
+                                                                        <ChevronRight className={`w-4 h-4 transition-all duration-200 ${activeCategoryIndex === idx
+                                                                            ? 'text-white transform rotate-90'
+                                                                            : 'text-slate-400 group-hover:text-slate-600'
+                                                                            }`} />
                                                                     </div>
-                                                                    <ChevronRight className={`w-4 h-4 transition-all duration-200 ${activeCategoryIndex === idx
-                                                                        ? 'text-white transform rotate-90'
-                                                                        : 'text-slate-400 group-hover:text-slate-600'
-                                                                        }`} />
-                                                                </div>
-                                                            </li>
-                                                        ))}
-                                                    </ul>
+                                                                </li>
+                                                            ))}
+                                                        </ul>
+                                                    )}
                                                 </div>
                                             </div>
 
                                             {/* Right Panel - Courses */}
                                             <div className="w-3/5 bg-white">
-                                                {coursesData[activeCategoryIndex] && (
+                                                {coursesLoading ? (
+                                                    <div className="p-4">
+                                                        <div className="h-6 bg-gray-200 rounded w-1/2 mb-4 animate-pulse"></div>
+                                                        <div className="space-y-3">
+                                                            {[1, 2, 3, 4].map((i) => (
+                                                                <div key={i} className="h-16 bg-gray-200 rounded animate-pulse"></div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : coursesData[activeCategoryIndex] && (
                                                     <>
                                                         {/* Header */}
                                                         <div className="p-4 border-b border-slate-100 bg-gradient-to-r from-orange-50 to-amber-50">
@@ -317,7 +368,6 @@ const Navbar = () => {
         {/* Mobile Courses Dropdown */}
         <div className="relative">
             <button 
-                
 
                 className="w-full flex justify-between items-center text-gray-600 hover:bg-teal-50 hover:text-teal-600 px-3 py-2 rounded-md text-base font-medium"
             >
@@ -326,38 +376,46 @@ const Navbar = () => {
             </button>
             
             {showCoursesDropdown && (
-                <div className="pl-4 mt-1 space-y-1">
-                    {coursesData.map((cat, idx) => (
-                        <div key={idx} className="border-l-2 border-teal-200 pl-3">
-                            <button 
-                                onClick={() => setActiveCategoryIndex(activeCategoryIndex === idx ? null : idx)}
-                                className="w-full flex justify-between items-center text-gray-600 hover:text-teal-600 px-2 py-1 rounded-md text-sm font-medium"
-                            >
-                                <div className="flex items-center gap-2">
-                                    <div className="text-teal-600">
-                                        {cat.icon}
+                {coursesLoading ? (
+                    <div className="pl-4 mt-1 space-y-2">
+                        {[1, 2, 3].map((i) => (
+                            <div key={i} className="h-8 bg-gray-200 rounded animate-pulse"></div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="pl-4 mt-1 space-y-1">
+                        {coursesData.map((cat, idx) => (
+                            <div key={idx} className="border-l-2 border-teal-200 pl-3">
+                                <button 
+                                    onClick={() => setActiveCategoryIndex(activeCategoryIndex === idx ? null : idx)}
+                                    className="w-full flex justify-between items-center text-gray-600 hover:text-teal-600 px-2 py-1 rounded-md text-sm font-medium"
+                                >
+                                    <div className="flex items-center gap-2">
+                                        <div className="text-teal-600">
+                                            {cat.icon}
+                                        </div>
+                                        {cat.category}
                                     </div>
-                                    {cat.category}
-                                </div>
-                                <ChevronDown size={16} className={`transition-transform ${activeCategoryIndex === idx ? 'transform rotate-180' : ''}`} />
-                            </button>
-                            
-                            {activeCategoryIndex === idx && (
-                                <div className="pl-2 mt-1 space-y-1">
-                                    {cat.courses.map((course, i) => (
-                                        <a
-                                            key={i}
-                                            href={`/courses/${(course.courseCode)}`}
-                                            className="block px-2 py-1.5 text-gray-600 hover:bg-teal-50 hover:text-teal-600 rounded-md text-sm"
-                                        >
-                                            {course.courseName}
-                                        </a>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
+                                    <ChevronDown size={16} className={`transition-transform ${activeCategoryIndex === idx ? 'transform rotate-180' : ''}`} />
+                                </button>
+                                
+                                {activeCategoryIndex === idx && (
+                                    <div className="pl-2 mt-1 space-y-1">
+                                        {cat.courses.map((course, i) => (
+                                            <a
+                                                key={i}
+                                                href={`/courses/${(course.courseCode)}`}
+                                                className="block px-2 py-1.5 text-gray-600 hover:bg-teal-50 hover:text-teal-600 rounded-md text-sm"
+                                            >
+                                                {course.courseName}
+                                            </a>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             )}
         </div>
 

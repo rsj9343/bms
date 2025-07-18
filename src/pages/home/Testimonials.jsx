@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Star } from "lucide-react";
+import { TestimonialCardSkeleton } from "../../components/common/SkeletonLoader";
 
 export default function CoachingTestimonials() {
   const [testimonials, setTestimonials] = useState([]);
@@ -23,7 +24,22 @@ export default function CoachingTestimonials() {
     fetchTestimonials();
   }, []);
 
-  if (loading) return <p className="text-center">Loading testimonials...</p>;
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        <h2 className="text-4xl font-bold text-center mb-16">
+          What our clients say about{" "}
+          <span className="text-purple-600">Peak Coaching</span>
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <TestimonialCardSkeleton key={i} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   if (error) return <p className="text-center text-red-500">{error}</p>;
 
   return (
