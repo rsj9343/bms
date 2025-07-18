@@ -19,6 +19,13 @@ const CourseDetailPage = () => {
                 if (!res.ok) {
                     throw new Error(`Failed to fetch course data: ${res.statusText}`);
                 }
+                
+                // Check if response is actually JSON
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Backend server is not responding with JSON. Please ensure the backend is running.');
+                }
+                
                 return res.json();
             })
             .then(data => {
@@ -26,6 +33,7 @@ const CourseDetailPage = () => {
                 setLoading(false);
             })
             .catch(err => {
+                console.error('Error fetching course data:', err);
                 setError(err.message);
                 setLoading(false);
             });

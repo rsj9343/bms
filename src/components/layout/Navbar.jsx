@@ -49,7 +49,16 @@ const Navbar = () => {
         const fetchCourses = async () => {
             try {
                 const response = await fetch(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/api/courses`);
-                if (!response.ok) throw new Error('Failed to fetch courses');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch courses: ${response.status} ${response.statusText}`);
+                }
+                
+                // Check if response is actually JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Backend server is not responding with JSON. Please ensure the backend is running.');
+                }
+                
                 const data = await response.json();
                 
                 // Transform data to match the expected format
@@ -63,6 +72,8 @@ const Navbar = () => {
                 setCoursesLoading(false);
             } catch (error) {
                 console.error('Error fetching courses:', error);
+                // Set empty data to prevent UI errors
+                setCoursesData([]);
                 setCoursesLoading(false);
             }
         };

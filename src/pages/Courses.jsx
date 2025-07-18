@@ -21,7 +21,16 @@ export default function Courses() {
     async function fetchCourses() {
       try {
         const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/api/courses`);
-        if (!res.ok) throw new Error('Failed to fetch courses');
+        if (!res.ok) {
+          throw new Error(`Failed to fetch courses: ${res.status} ${res.statusText}`);
+        }
+        
+        // Check if response is actually JSON
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Backend server is not responding with JSON. Please ensure the backend is running.');
+        }
+        
         const data = await res.json();
 
         const flattened = data.flatMap(group =>
@@ -34,7 +43,8 @@ export default function Courses() {
         setAllCourses(flattened);
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching courses:', err);
+        setError(err.message || 'Failed to connect to backend. Please ensure the backend server is running.');
         setLoading(false);
       }
     }

@@ -10,13 +10,23 @@ export default function CoachingTestimonials() {
   useEffect(() => {
     async function fetchTestimonials() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/api/testimonials`); // adjust base URL as needed
-        if (!res.ok) throw new Error("Failed to fetch testimonials");
+        const res = await fetch(`${import.meta.env.VITE_REACT_APP_API_BASE_URL}/api/testimonials`);
+        if (!res.ok) {
+          throw new Error(`Failed to fetch testimonials: ${res.status} ${res.statusText}`);
+        }
+        
+        // Check if response is actually JSON
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Backend server is not responding with JSON. Please ensure the backend is running.');
+        }
+        
         const data = await res.json();
         setTestimonials(data);
         setLoading(false);
       } catch (err) {
-        setError(err.message);
+        console.error('Error fetching testimonials:', err);
+        setError(err.message || 'Failed to connect to backend. Please ensure the backend server is running.');
         setLoading(false);
       }
     }
